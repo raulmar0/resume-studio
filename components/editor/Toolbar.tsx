@@ -294,7 +294,8 @@ export function Toolbar({
           <DialogHeader>
             <DialogTitle>Import resume data</DialogTitle>
             <DialogDescription>
-              Continue with a JSON or YAML file, or download a template first.
+              Upload a JSON or YAML file. Supports full exports, document-only
+              data, and JSON Resume format.
             </DialogDescription>
           </DialogHeader>
           <input
