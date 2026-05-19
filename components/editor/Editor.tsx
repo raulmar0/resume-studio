@@ -1,0 +1,67 @@
+"use client";
+
+import { useEffect } from "react";
+import { useResumeEditor } from "@/lib/stores/resume-editor";
+import { useAutosave } from "@/lib/stores/use-autosave";
+import type {
+  ResumeDocument,
+  Theme,
+  TemplateId,
+} from "@/lib/schemas/resume";
+import { Toolbar } from "./Toolbar";
+import { SectionPanel } from "./SectionPanel";
+import { PDFPreview } from "@/components/preview/PDFPreview";
+
+export interface EditorInit {
+  id: string;
+  title: string;
+  templateId: TemplateId;
+  theme: Theme;
+  doc: ResumeDocument;
+}
+
+export function Editor({ init }: { init: EditorInit }) {
+  const hydrate = useResumeEditor((s) => s.hydrate);
+
+  useEffect(() => {
+    hydrate({
+      title: init.title,
+      templateId: init.templateId,
+      theme: init.theme,
+      doc: init.doc,
+    });
+    useResumeEditor.temporal.getState().clear();
+  }, [init.id, init.title, init.templateId, init.theme, init.doc, hydrate]);
+
+  const status = useAutosave(init.id);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        useResumeEditor.temporal.getState().undo();
+      } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+        e.preventDefault();
+        useResumeEditor.temporal.getState().redo();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <div className="h-svh flex flex-col">
+      <Toolbar resumeId={init.id} status={status} />
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden">
+        <div className="overflow-y-auto border-r bg-muted/20">
+          <SectionPanel />
+        </div>
+        <div className="hidden lg:block bg-muted/30">
+          <PDFPreview />
+        </div>
+      </div>
+    </div>
+  );
+}
