@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { createElement } from "react";
 import { useResumeEditor } from "@/lib/stores/resume-editor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MinimalTemplate } from "@/components/templates/MinimalTemplate";
@@ -12,8 +13,8 @@ import type {
   Theme,
 } from "@/lib/schemas/resume";
 
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((m) => m.PDFViewer),
+const StablePDFFrame = dynamic(
+  () => import("./StablePDFFrame").then((m) => m.StablePDFFrame),
   {
     ssr: false,
     loading: () => (
@@ -30,14 +31,10 @@ export function PDFPreview() {
   const templateId = useResumeEditor((s) => s.templateId);
 
   return (
-    <PDFViewer
-      width="100%"
-      height="100%"
+    <StablePDFFrame
       showToolbar={false}
-      className="border-0 bg-transparent"
-    >
-      <PreviewTemplate templateId={templateId} doc={doc} theme={theme} />
-    </PDFViewer>
+      document={createElement(PreviewTemplate, { templateId, doc, theme })}
+    />
   );
 }
 

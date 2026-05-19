@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -86,10 +86,6 @@ export function Toolbar({
   const theme = useResumeEditor((s) => s.theme);
   const hydrate = useResumeEditor((s) => s.hydrate);
 
-  const [draftTitle, setDraftTitle] = useState(title);
-  useEffect(() => {
-    setDraftTitle(title);
-  }, [title]);
   const [, startTransition] = useTransition();
   const [downloading, setDownloading] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -102,7 +98,6 @@ export function Toolbar({
   function commitTitle(next: string) {
     const trimmed = next.trim() || "Untitled Resume";
     if (trimmed === title) return;
-    setDraftTitle(trimmed);
     setTitle(trimmed);
     startTransition(async () => {
       try {
@@ -172,7 +167,6 @@ export function Toolbar({
         theme: parsed.theme,
         doc: parsed.document,
       });
-      setDraftTitle(parsed.title);
       startTransition(async () => {
         try {
           await renameResume(resumeId, parsed.title);
@@ -210,18 +204,7 @@ export function Toolbar({
         <TooltipContent>Dashboard</TooltipContent>
       </Tooltip>
 
-      <Input
-        value={draftTitle}
-        onChange={(e) => setDraftTitle(e.target.value)}
-        onBlur={(e) => commitTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            (e.target as HTMLInputElement).blur();
-          }
-        }}
-        placeholder="Untitled Resume"
-        className="max-w-xs h-9 font-medium border-transparent hover:border-input focus-visible:border-input"
-      />
+      <TitleInput key={title} title={title} onCommit={commitTitle} />
 
       <div className="ml-2 hidden md:flex items-center gap-1">
         <Tooltip>
@@ -376,6 +359,35 @@ export function Toolbar({
   );
 }
 
+function TitleInput({
+  title,
+  onCommit,
+}: {
+  title: string;
+  onCommit: (next: string) => void;
+}) {
+  const [draftTitle, setDraftTitle] = useState(title);
+
+  return (
+    <Input
+      value={draftTitle}
+      onChange={(e) => setDraftTitle(e.target.value)}
+      onBlur={(e) => {
+        const trimmed = e.target.value.trim() || "Untitled Resume";
+        setDraftTitle(trimmed);
+        onCommit(trimmed);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      placeholder="Untitled Resume"
+      className="h-9 max-w-xs border-transparent font-medium hover:border-input focus-visible:border-input"
+    />
+  );
+}
+
 function SaveStatusPill({ status }: { status: SaveStatus }) {
   if (status === "idle") return null;
   const map: Record<
@@ -400,8 +412,11 @@ function SaveStatusPill({ status }: { status: SaveStatus }) {
   };
   const m = map[status];
   return (
-    <div className={`flex items-center gap-1.5 text-xs ${m.cls} mr-1`}>
-      {m.icon}
+    <div
+      className={`mr-1 flex w-[76px] shrink-0 items-center gap-1.5 text-xs ${m.cls}`}
+      aria-live="polite"
+    >
+      <span className="grid size-3.5 place-items-center">{m.icon}</span>
       <span>{m.text}</span>
     </div>
   );

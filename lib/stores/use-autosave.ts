@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { saveResume } from "@/app/resumes/actions";
 import { useResumeEditor } from "@/lib/stores/resume-editor";
+import { shouldApplyAutosaveResult } from "./autosave-version";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -14,23 +15,30 @@ export function useAutosave(resumeId: string): SaveStatus {
   const templateId = useResumeEditor((s) => s.templateId);
   const [status, setStatus] = useState<SaveStatus>("idle");
   const skipFirst = useRef(true);
+  const changeVersion = useRef(0);
 
   useEffect(() => {
     if (skipFirst.current) {
       skipFirst.current = false;
       return;
     }
+    const version = ++changeVersion.current;
+    setStatus("saving");
+
     const timer = setTimeout(async () => {
       try {
-        setStatus("saving");
         await saveResume(resumeId, {
           document: doc,
           theme,
           templateId,
         });
-        setStatus("saved");
+        if (shouldApplyAutosaveResult(version, changeVersion.current)) {
+          setStatus("saved");
+        }
       } catch {
-        setStatus("error");
+        if (shouldApplyAutosaveResult(version, changeVersion.current)) {
+          setStatus("error");
+        }
       }
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
