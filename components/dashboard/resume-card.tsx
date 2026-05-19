@@ -62,24 +62,26 @@ export function ResumeCard({
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [duplicating, setDuplicating] = useState(false);
   const router = useRouter();
   const template = getTemplate(templateId);
   const updatedRelative = formatDistanceToNow(new Date(updatedAt), {
     addSuffix: true,
   });
 
-  function onDuplicate() {
-    startTransition(async () => {
-      try {
-        await duplicateResume(id);
-        toast.success("Resume duplicated");
-        router.refresh();
-      } catch (err) {
-        toast.error("Could not duplicate", {
-          description: err instanceof Error ? err.message : undefined,
-        });
-      }
-    });
+  async function onDuplicate() {
+    setDuplicating(true);
+    try {
+      await duplicateResume(id);
+      toast.success("Resume duplicated");
+      router.refresh();
+    } catch (err) {
+      toast.error("Could not duplicate", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setDuplicating(false);
+    }
   }
 
   function onDelete() {
@@ -146,9 +148,9 @@ export function ResumeCard({
               <PencilLine className="size-4" />
               Rename
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={onDuplicate} disabled={pending}>
+            <DropdownMenuItem onSelect={onDuplicate} disabled={duplicating}>
               <Copy className="size-4" />
-              Duplicate
+              {duplicating ? "Duplicating…" : "Duplicate"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

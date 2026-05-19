@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   CloudOff,
   Download,
   FileDown,
@@ -44,6 +45,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useResumeEditor, useEditorUndo } from "@/lib/stores/resume-editor";
 import { type SaveStatus } from "@/lib/stores/use-autosave";
 import { TEMPLATES } from "@/lib/templates/registry";
@@ -141,11 +148,12 @@ export function Toolbar({
     );
   }
 
-  function downloadImportTemplate() {
+  function downloadImportTemplate(format: ResumeTransferFormat) {
+    const extension = format === "json" ? "json" : "yaml";
     downloadText(
-      "resume-import-template.yaml",
-      buildResumeImportTemplate("yaml"),
-      "application/yaml",
+      `resume-import-template.${extension}`,
+      buildResumeImportTemplate(format),
+      format === "json" ? "application/json" : "application/yaml",
     );
   }
 
@@ -286,7 +294,7 @@ export function Toolbar({
           <DialogHeader>
             <DialogTitle>Import resume data</DialogTitle>
             <DialogDescription>
-              Continue with a JSON or YAML file, or download the template first.
+              Continue with a JSON or YAML file, or download a template first.
             </DialogDescription>
           </DialogHeader>
           <input
@@ -303,9 +311,13 @@ export function Toolbar({
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button variant="outline" onClick={downloadImportTemplate}>
+            <Button variant="outline" onClick={() => downloadImportTemplate("json")}>
               <FileDown className="size-4" />
-              Download template
+              Download JSON template
+            </Button>
+            <Button variant="outline" onClick={() => downloadImportTemplate("yaml")}>
+              <FileDown className="size-4" />
+              Download YAML template
             </Button>
             <Button onClick={() => fileInputRef.current?.click()}>
               <FileUp className="size-4" />
@@ -315,15 +327,25 @@ export function Toolbar({
         </DialogContent>
       </Dialog>
 
-      <Button variant="outline" onClick={() => exportData("json")} size="sm">
-        <FileDown className="size-4" />
-        JSON
-      </Button>
-
-      <Button variant="outline" onClick={() => exportData("yaml")} size="sm">
-        <FileDown className="size-4" />
-        YAML
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="outline" size="sm">
+              <FileDown className="size-4" />
+              Export
+              <ChevronDown className="size-3 opacity-50" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => exportData("json")}>
+            Export as JSON
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => exportData("yaml")}>
+            Export as YAML
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Button onClick={onDownload} disabled={downloading} size="sm">
         {downloading ? (

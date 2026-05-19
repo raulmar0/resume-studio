@@ -58,7 +58,7 @@ export function Editor({ init }: { init: EditorInit }) {
         <div className="overflow-y-auto border-r bg-muted/20">
           <SectionPanel />
         </div>
-        <div className="hidden lg:block bg-muted/30">
+        <div className="hidden lg:block bg-white">
           <PDFPreview />
         </div>
       </div>

@@ -14,7 +14,7 @@ export function ClassicTemplate({
   const serifTheme = { ...theme, fontFamily: "Times" as const };
   const { base, sectionStyles } = makeBaseStyles(serifTheme, {
     sectionTitle: {
-      fontFamily: "Times",
+      fontFamily: "Times-Roman",
       fontSize: theme.fontSize * 1.15,
       fontWeight: 700,
       marginBottom: 4,
@@ -29,8 +29,8 @@ export function ClassicTemplate({
       alignItems: "center",
       marginBottom: 8,
     },
-    name: { fontSize: theme.fontSize * 2.2, fontWeight: 700, marginBottom: 2 },
-    headline: { color: "#333333", marginBottom: 4 },
+    name: { fontSize: theme.fontSize * 2.2, fontWeight: 700, fontFamily: "Times-Roman", marginBottom: 2 },
+    headline: { color: "#333333", fontFamily: "Times-Roman", marginBottom: 4 },
   });
 
   return (

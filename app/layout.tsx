@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Source_Sans_3 } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/providers";
 import "./globals.css";
 
 const sourceSans = Source_Sans_3({
@@ -29,10 +30,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${sourceSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider delay={200}>{children}</TooltipProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <TooltipProvider delay={200}>{children}</TooltipProvider>
+        </ThemeProvider>
         <Toaster richColors closeButton position="bottom-right" />
       </body>
     </html>

@@ -234,13 +234,26 @@ export function SectionRenderer({
   }
 }
 
+export function toPdfFontFamily(family: Theme["fontFamily"]): string {
+  switch (family) {
+    case "Times":
+      return "Times-Roman";
+    case "Courier":
+      return "Courier";
+    case "Helvetica":
+    default:
+      return "Helvetica";
+  }
+}
+
 export function makeBaseStyles(theme: Theme, override?: Partial<SectionStyles>) {
+  const pdfFont = toPdfFontFamily(theme.fontFamily);
   const base = StyleSheet.create({
     // @react-pdf style record
 
     page: {
       padding: MARGIN_PT[theme.margin],
-      fontFamily: theme.fontFamily,
+      fontFamily: pdfFont,
       fontSize: theme.fontSize,
       lineHeight: theme.lineHeight,
       color: "#111111",
@@ -248,16 +261,19 @@ export function makeBaseStyles(theme: Theme, override?: Partial<SectionStyles>) 
     name: {
       fontSize: theme.fontSize * 2.0,
       fontWeight: 700,
+      fontFamily: pdfFont,
       marginBottom: 2,
     },
     headline: {
       color: "#444444",
+      fontFamily: pdfFont,
       marginBottom: 6,
     },
     sectionWrap: { marginTop: 10 },
     sectionTitle: {
       fontSize: theme.fontSize * 1.05,
       fontWeight: 700,
+      fontFamily: pdfFont,
       marginBottom: 4,
       textTransform: "uppercase",
       letterSpacing: 1,
