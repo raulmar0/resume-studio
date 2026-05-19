@@ -6,7 +6,6 @@ import {
   ThemeSchema,
   defaultTheme,
   emptyDocument,
-  newSection,
   type Contact,
   type ContactLink,
   type ResumeDocument,

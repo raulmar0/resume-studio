@@ -24,6 +24,7 @@ export const ContactLinkSchema = z.object({
   label: z.string().min(1).max(40),
   url: z.string().min(1).max(200),
 });
+export type ContactLink = z.infer<typeof ContactLinkSchema>;
 
 export const ContactSchema = z.object({
   fullName: z.string().default(""),
