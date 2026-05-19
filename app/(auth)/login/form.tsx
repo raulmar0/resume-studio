@@ -6,6 +6,7 @@ import { login, type ActionState } from "@/app/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { AuthFeedback } from "@/components/auth/auth-feedback";
 import { OAuthButton } from "@/components/auth/oauth-button";
@@ -62,6 +63,13 @@ export function LoginForm({
         <AuthFeedback error={state.error} />
         <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
       </form>
+      <Button
+        variant="outline"
+        className="w-full"
+        render={<Link href="/guest/dashboard" />}
+      >
+        Continue without account
+      </Button>
     </div>
   );
 }

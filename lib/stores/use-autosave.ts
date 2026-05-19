@@ -4,12 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { saveResume } from "@/app/resumes/actions";
 import { useResumeEditor } from "@/lib/stores/resume-editor";
 import { shouldApplyAutosaveResult } from "./autosave-version";
+import {
+  persistAutosave,
+  type PersistenceMode,
+} from "./autosave-persistence";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 const DEBOUNCE_MS = 800;
 
-export function useAutosave(resumeId: string): SaveStatus {
+export function useAutosave(
+  resumeId: string,
+  mode: PersistenceMode = "cloud",
+): SaveStatus {
   const doc = useResumeEditor((s) => s.doc);
   const theme = useResumeEditor((s) => s.theme);
   const templateId = useResumeEditor((s) => s.templateId);
@@ -27,10 +34,13 @@ export function useAutosave(resumeId: string): SaveStatus {
 
     const timer = setTimeout(async () => {
       try {
-        await saveResume(resumeId, {
+        await persistAutosave({
+          mode,
+          resumeId,
           document: doc,
           theme,
           templateId,
+          saveCloud: saveResume,
         });
         if (shouldApplyAutosaveResult(version, changeVersion.current)) {
           setStatus("saved");
@@ -42,7 +52,7 @@ export function useAutosave(resumeId: string): SaveStatus {
       }
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [doc, theme, templateId, resumeId]);
+  }, [doc, theme, templateId, resumeId, mode]);
 
   return status;
 }

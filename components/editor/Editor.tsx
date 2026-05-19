@@ -8,6 +8,7 @@ import type {
   Theme,
   TemplateId,
 } from "@/lib/schemas/resume";
+import type { PersistenceMode } from "@/lib/stores/autosave-persistence";
 import { Toolbar } from "./Toolbar";
 import { SectionPanel } from "./SectionPanel";
 import { PDFPreview } from "@/components/preview/PDFPreview";
@@ -18,6 +19,7 @@ export interface EditorInit {
   templateId: TemplateId;
   theme: Theme;
   doc: ResumeDocument;
+  mode?: PersistenceMode;
 }
 
 export function Editor({ init }: { init: EditorInit }) {
@@ -33,7 +35,8 @@ export function Editor({ init }: { init: EditorInit }) {
     useResumeEditor.temporal.getState().clear();
   }, [init.id, init.title, init.templateId, init.theme, init.doc, hydrate]);
 
-  const status = useAutosave(init.id);
+  const mode = init.mode ?? "cloud";
+  const status = useAutosave(init.id, mode);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -53,7 +56,7 @@ export function Editor({ init }: { init: EditorInit }) {
 
   return (
     <div className="h-svh flex flex-col">
-      <Toolbar resumeId={init.id} status={status} />
+      <Toolbar resumeId={init.id} status={status} mode={mode} />
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden">
         <div className="overflow-y-auto border-r bg-muted/20">
           <SectionPanel />

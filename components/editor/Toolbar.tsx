@@ -53,8 +53,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useResumeEditor, useEditorUndo } from "@/lib/stores/resume-editor";
 import { type SaveStatus } from "@/lib/stores/use-autosave";
+import type { PersistenceMode } from "@/lib/stores/autosave-persistence";
 import { TEMPLATES } from "@/lib/templates/registry";
 import { renameResume } from "@/app/resumes/actions";
+import { renameLocalResume, saveLocalResume } from "@/lib/local-resumes";
 import {
   buildResumeFilename,
   downloadResumePdf,
@@ -74,9 +76,11 @@ import { ThemePanel } from "./ThemePanel";
 export function Toolbar({
   resumeId,
   status,
+  mode = "cloud",
 }: {
   resumeId: string;
   status: SaveStatus;
+  mode?: PersistenceMode;
 }) {
   const title = useResumeEditor((s) => s.title);
   const setTitle = useResumeEditor((s) => s.setTitle);
@@ -94,11 +98,22 @@ export function Toolbar({
   const undo = useEditorUndo();
   const canUndo = undo.pastStates.length > 0;
   const canRedo = undo.futureStates.length > 0;
+  const dashboardHref = mode === "local" ? "/guest/dashboard" : "/dashboard";
 
   function commitTitle(next: string) {
     const trimmed = next.trim() || "Untitled Resume";
     if (trimmed === title) return;
     setTitle(trimmed);
+    if (mode === "local") {
+      try {
+        renameLocalResume(resumeId, trimmed);
+      } catch (err) {
+        toast.error("Could not save title", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      }
+      return;
+    }
     startTransition(async () => {
       try {
         await renameResume(resumeId, trimmed);
@@ -167,6 +182,17 @@ export function Toolbar({
         theme: parsed.theme,
         doc: parsed.document,
       });
+      if (mode === "local") {
+        saveLocalResume(resumeId, {
+          title: parsed.title,
+          templateId: parsed.templateId,
+          theme: parsed.theme,
+          document: parsed.document,
+        });
+        setImportOpen(false);
+        toast.success("Resume imported");
+        return;
+      }
       startTransition(async () => {
         try {
           await renameResume(resumeId, parsed.title);
@@ -195,7 +221,7 @@ export function Toolbar({
             <Button
               variant="ghost"
               size="icon"
-              render={<Link href="/dashboard" aria-label="Back to dashboard" />}
+              render={<Link href={dashboardHref} aria-label="Back to dashboard" />}
             />
           }
         >
