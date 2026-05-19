@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -87,6 +87,9 @@ export function Toolbar({
   const hydrate = useResumeEditor((s) => s.hydrate);
 
   const [draftTitle, setDraftTitle] = useState(title);
+  useEffect(() => {
+    setDraftTitle(title);
+  }, [title]);
   const [, startTransition] = useTransition();
   const [downloading, setDownloading] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -308,24 +311,26 @@ export function Toolbar({
               if (file) void importFile(file);
             }}
           />
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-col gap-2 text-xs text-muted-foreground">
             <span>Need a starting point?</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => downloadImportTemplate("json")}
-            >
-              <FileDown className="size-4" />
-              JSON template
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => downloadImportTemplate("yaml")}
-            >
-              <FileDown className="size-4" />
-              YAML template
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadImportTemplate("json")}
+              >
+                <FileDown className="size-4" />
+                JSON template
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadImportTemplate("yaml")}
+              >
+                <FileDown className="size-4" />
+                YAML template
+              </Button>
+            </div>
           </div>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>

@@ -31,7 +31,6 @@ export function PDFPreview() {
 
   return (
     <PDFViewer
-      key={templateId}
       width="100%"
       height="100%"
       showToolbar={false}
