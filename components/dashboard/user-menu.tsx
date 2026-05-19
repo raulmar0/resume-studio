@@ -1,107 +1,154 @@
 "use client";
 
-import { useState } from "react";
-import { LogOut, Moon, Settings, Sun, User } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { signOut } from "@/app/auth/actions";
+import { toast } from "sonner";
+import { signOut, updateProfile, type ActionState } from "@/app/auth/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export function UserMenu({ name, email }: { name: string; email: string }) {
+const initialState: ActionState = { error: null, success: null };
+
+export function UserMenu({
+  name,
+  email,
+  displayName,
+}: {
+  name: string;
+  email: string;
+  displayName: string;
+}) {
   const initial = (name || email || "?").charAt(0).toUpperCase();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={<Button variant="ghost" size="sm" className="gap-2 h-9 px-2" />}
-        >
-          <Avatar className="size-7">
-            <AvatarFallback className="text-xs">{initial}</AvatarFallback>
-          </Avatar>
-          <span className="hidden sm:inline text-sm">{name}</span>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel className="flex items-center gap-2">
-            <User className="size-4" />
-            <span className="truncate">{email}</span>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
-            <Settings className="size-4" />
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <form action={signOut}>
-            <DropdownMenuItem render={<button type="submit" className="w-full" />}>
-              <LogOut className="size-4" />
-              Sign out
-            </DropdownMenuItem>
-          </form>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={<Button variant="ghost" size="sm" className="gap-2 h-9 px-2" />}
+      >
+        <Avatar className="size-7">
+          <AvatarFallback className="text-xs">{initial}</AvatarFallback>
+        </Avatar>
+        <span className="hidden sm:inline text-sm">{name}</span>
+      </DialogTrigger>
+      <SettingsContent
+        email={email}
+        displayName={displayName}
+        onClose={() => setOpen(false)}
+      />
+    </Dialog>
   );
 }
 
-function SettingsDialog({
-  open,
-  onOpenChange,
+function SettingsContent({
+  email,
+  displayName,
+  onClose,
 }: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
+  email: string;
+  displayName: string;
+  onClose: () => void;
 }) {
   const { resolvedTheme, setTheme } = useTheme();
+  const [state, formAction, pending] = useActionState(
+    updateProfile,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (state.success) {
+      toast.success(state.success);
+      onClose();
+    }
+    if (state.error) toast.error(state.error);
+  }, [state, onClose]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Settings</DialogTitle>
+        <DialogDescription>
+          Manage your profile and appearance.
+        </DialogDescription>
+      </DialogHeader>
+
+      <form action={formAction} className="space-y-5">
+        <div className="space-y-3">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Profile
+          </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Appearance</label>
-            <div className="flex items-center gap-2 rounded-lg border p-1">
-              <Button
-                variant={resolvedTheme === "light" ? "secondary" : "ghost"}
-                size="sm"
-                className="flex-1 gap-2"
-                onClick={() => setTheme("light")}
-              >
-                <Sun className="size-4" />
-                Light
-              </Button>
-              <Button
-                variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
-                size="sm"
-                className="flex-1 gap-2"
-                onClick={() => setTheme("dark")}
-              >
-                <Moon className="size-4" />
-                Dark
-              </Button>
-            </div>
+            <Label htmlFor="displayName">Display name</Label>
+            <Input
+              id="displayName"
+              name="displayName"
+              defaultValue={displayName}
+              placeholder="Your name"
+              maxLength={80}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" value={email} disabled readOnly />
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <div className="space-y-2">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Appearance
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border p-1">
+            <Button
+              type="button"
+              variant={resolvedTheme === "light" ? "secondary" : "ghost"}
+              size="sm"
+              className="flex-1 gap-2"
+              onClick={() => setTheme("light")}
+            >
+              <Sun className="size-4" />
+              Light
+            </Button>
+            <Button
+              type="button"
+              variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
+              size="sm"
+              className="flex-1 gap-2"
+              onClick={() => setTheme("dark")}
+            >
+              <Moon className="size-4" />
+              Dark
+            </Button>
+          </div>
+        </div>
+
+        <div className="-mx-4 -mb-4 flex items-center justify-between gap-2 rounded-b-xl border-t bg-muted/50 p-4">
+          <Button
+            type="submit"
+            formAction={signOut}
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            formNoValidate
+          >
+            <LogOut className="size-4" />
+            Sign out
+          </Button>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      </form>
+    </DialogContent>
   );
 }

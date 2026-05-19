@@ -9,7 +9,18 @@ export async function NavBar() {
     data: { user },
   } = await supabase.auth.getUser();
   const email = user?.email ?? "";
-  const name = (user?.user_metadata?.name as string | undefined) ?? email;
+  let displayName: string | null =
+    (user?.user_metadata?.name as string | undefined)?.trim() || null;
+
+  if (user?.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.display_name) displayName = profile.display_name;
+  }
+  const name = displayName ?? email;
 
   return (
     <header className="border-b sticky top-0 z-30 bg-background/80 backdrop-blur">
@@ -18,7 +29,7 @@ export async function NavBar() {
           <FileText className="size-5" />
           Resume Studio
         </Link>
-        <UserMenu name={name} email={email} />
+        <UserMenu name={name} email={email} displayName={displayName ?? ""} />
       </div>
     </header>
   );

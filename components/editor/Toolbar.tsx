@@ -308,18 +308,29 @@ export function Toolbar({
               if (file) void importFile(file);
             }}
           />
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span>Need a starting point?</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadImportTemplate("json")}
+            >
+              <FileDown className="size-4" />
+              JSON template
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadImportTemplate("yaml")}
+            >
+              <FileDown className="size-4" />
+              YAML template
+            </Button>
+          </div>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button variant="outline" onClick={() => downloadImportTemplate("json")}>
-              <FileDown className="size-4" />
-              Download JSON template
-            </Button>
-            <Button variant="outline" onClick={() => downloadImportTemplate("yaml")}>
-              <FileDown className="size-4" />
-              Download YAML template
-            </Button>
             <Button onClick={() => fileInputRef.current?.click()}>
               <FileUp className="size-4" />
               Continue

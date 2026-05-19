@@ -99,3 +99,38 @@ export async function signOut() {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+const DisplayName = z
+  .string()
+  .trim()
+  .max(80, "Display name must be 80 characters or fewer");
+
+export async function updateProfile(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = DisplayName.safeParse(formData.get("displayName") ?? "");
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const displayName = parsed.data.length > 0 ? parsed.data : null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "You must be signed in" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ display_name: displayName })
+    .eq("id", user.id);
+  if (error) return { error: error.message };
+
+  if (displayName !== ((user.user_metadata?.name as string | undefined) ?? null)) {
+    await supabase.auth.updateUser({
+      data: { name: displayName ?? "" },
+    });
+  }
+
+  revalidatePath("/", "layout");
+  return { error: null, success: "Profile updated." };
+}
