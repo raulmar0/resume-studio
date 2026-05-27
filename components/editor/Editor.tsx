@@ -11,7 +11,7 @@ import type {
 import type { PersistenceMode } from "@/lib/stores/autosave-persistence";
 import { Toolbar } from "./Toolbar";
 import { SectionPanel } from "./SectionPanel";
-import { PDFPreview } from "@/components/preview/PDFPreview";
+import { LivePreview } from "@/components/preview/LivePreview";
 
 export interface EditorInit {
   id: string;
@@ -61,8 +61,8 @@ export function Editor({ init }: { init: EditorInit }) {
         <div className="overflow-y-auto border-r bg-muted/20">
           <SectionPanel />
         </div>
-        <div className="hidden lg:block bg-white">
-          <PDFPreview />
+        <div className="hidden lg:block">
+          <LivePreview />
         </div>
       </div>
     </div>
