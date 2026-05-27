@@ -57,11 +57,11 @@ export function Editor({ init }: { init: EditorInit }) {
   return (
     <div className="h-svh flex flex-col">
       <Toolbar resumeId={init.id} status={status} mode={mode} />
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden">
-        <div className="overflow-y-auto border-r bg-muted/20">
+      <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden">
+        <div className="min-h-0 overflow-y-auto border-r bg-muted/20">
           <SectionPanel />
         </div>
-        <div className="hidden lg:block">
+        <div className="hidden min-h-0 overflow-hidden lg:block">
           <LivePreview />
         </div>
       </div>
